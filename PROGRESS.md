@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M2 — not started
+**Resume from:** M3 — not started
 
 ## Stack
 
@@ -36,14 +36,14 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 
 **Definition of done:** Storage module round-trips all entities; `subSuggester` is unit-tested and green.
 
-- [ ] Entity shapes documented in `src/types.js` (JSDoc): `Player`, `Match`, `Stint` (+ enums `MatchStatus`, `StintRole`)
-- [ ] Storage CRUD: `players`, `matches`, `stints` collections (each is a JSON array under one key)
-- [ ] `MatchRepository` (or plain functions) wrapping storage — keeps view code free of `localStorage` calls
-- [ ] `subSuggester(stints, currentClockSec)` — pure; least-minutes bench player; goalie excluded; `null` on tie
-- [ ] Test runner: pick lightweight option (Node's built-in `node:test` against the pure modules — no DOM needed for `subSuggester`)
-- [ ] `subSuggester.test.js` — least-minutes bench player chosen; goalie excluded from "most"; `null` on tie
+- [x] Entity shapes documented in `src/types.js` (JSDoc): `Player`, `Match`, `Stint` (+ enums `MatchStatus`, `StintRole`)
+- [x] Storage CRUD: `players`, `matches`, `stints` collections (each is a JSON array under one key)
+- [x] `MatchRepository` (or plain functions) wrapping storage — keeps view code free of `localStorage` calls
+- [x] `subSuggester(stints, currentClockSec)` — pure; least-minutes bench player; goalie excluded; `null` on tie
+- [x] Test runner: Node's built-in `node:test` against pure modules
+- [x] `subSuggester.test.js` — least-minutes bench player chosen; goalie excluded from "most"; `null` on tie
 
-**Status:** not started
+**Status:** complete
 **Notes:**
 
 ---
