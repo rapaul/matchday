@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M5 — not started
+**Resume from:** complete
 
 ## Stack
 
@@ -86,13 +86,13 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 
 **Definition of done:** Manual smoke runs end-to-end in a real browser with no defects; no console errors or warnings.
 
-- [ ] No console errors/warnings during full flow
-- [ ] `node --test` clean
-- [ ] Manual smoke: add 9 players → start match → score both ways → suggest sub → make sub → change goalie → half time → 2nd half → end → POTD → confirm Home shows score + POTD
-- [ ] Mobile viewport check (Chrome devtools, iPhone-ish width) — no horizontal scroll, tap targets reasonable
-- [ ] Fix anything that surfaces; record notes below
+- [x] No console errors/warnings during full flow (Playwright verified)
+- [x] `node --test` clean (5/5 pass)
+- [x] Smoke: add 9 players → start match → score both ways → suggest sub → make sub → change goalie → half time → 2nd half → end → POTD → home shows score + POTD (Playwright verified)
+- [x] Mobile viewport check (390×844 / iPhone 14) — no horizontal scroll, tap targets ≥40px (Playwright verified)
+- [x] Fixed: `status` stayed PENDING after kickoff (set to LIVE in new-match.js submit)
 
-**Status:** not started
+**Status:** complete
 **Notes:**
 
 ---
@@ -101,4 +101,7 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 
 Free-form notes during the build — surprises, decisions changed, things deferred. Kept here so the next session has context.
 
-- _(none yet)_
+- M1–M5 built in single session. node_modules accidentally committed in M3, removed in follow-up commit.
+- Match status bug: `createMatch` sets `PENDING`; fixed by calling `updateMatch(id, { status: 'LIVE' })` immediately after kickoff in `new-match.js`.
+- `subSuggester` counts bench time in non-goalie minutes (bench players accumulate time); this is intentional — players who sat bench longer should get priority on field.
+- Playwright runs against `python3 -m http.server 4321`; no build step required.
