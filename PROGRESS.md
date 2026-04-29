@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M4 — not started
+**Resume from:** M5 — not started
 
 ## Stack
 
@@ -67,17 +67,17 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 
 **Definition of done:** Can start a match, score goals, sub, change goalie, run a half, end match, pick POTD, and see it on Home with the right score.
 
-- [ ] `src/views/new-match.js` — opponent, half length, lineup picker (6 outfielders + 1 goalie + 2 bench); "Kick off" creates `Match` + opens 9 initial stints, navigates to live match
-- [ ] `src/match-clock.js` — `setInterval`-driven clock with pause/resume; emits via callback or simple event-emitter
-- [ ] `src/views/live-match.js` — score row, on-field list (with goalie indicator + per-player minutes), bench list, action buttons; re-renders on clock tick
-- [ ] Goal +Us / +Them increments score
-- [ ] Tap bench player → modal/sheet picks on-field outfielder → swap closes/opens stints
-- [ ] "Suggest sub" → confirm dialog → applies via same swap path
-- [ ] "Change goalie" → pick new goalie (from field or bench)
-- [ ] "Half time" pauses clock; button flips to "Start 2nd half"
-- [ ] "End match" → POTD dialog → save POTD, close all open stints, mark FINISHED, return to Home
+- [x] `src/views/new-match.js` — opponent, half length, lineup picker (6 outfielders + 1 goalie + 2 bench); "Kick off" creates `Match` + opens 9 initial stints, navigates to live match
+- [x] `src/match-clock.js` — `setInterval`-driven clock with pause/resume; emits via callback
+- [x] `src/views/live-match.js` — score row, on-field list (with goalie indicator + per-player minutes), bench list, action buttons; re-renders on clock tick
+- [x] Goal +Us / +Them increments score
+- [x] Tap bench player → prompt picks on-field outfielder → swap closes/opens stints
+- [x] "Suggest sub" → confirm dialog → applies via same swap path
+- [x] "Change goalie" → pick new goalie from on-field outfielders
+- [x] "Half time" pauses clock; button flips to "Start 2nd half"
+- [x] "End match" → POTD dialog → save POTD, close all open stints, mark FINISHED, return to Home
 
-**Status:** not started
+**Status:** complete
 **Notes:**
 
 ---

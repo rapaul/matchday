@@ -21,10 +21,10 @@ test('hash routing to #/new-match shows New match', async ({ page }) => {
   await expect(page.locator('h1')).toContainText('New match');
 });
 
-test('hash routing to live match shows Live match', async ({ page }) => {
+test('hash routing to live match route renders without crash', async ({ page }) => {
   await page.goto('/#/live-match/abc123');
-  await expect(page.locator('h1')).toContainText('Live match');
-  await expect(page.locator('.page-body')).toContainText('abc123');
+  // No real match exists, so shows "not found" — but routing works (no 404 page)
+  await expect(page.locator('.page-body')).toContainText('not found');
 });
 
 test('localStorage round-trips via storage module', async ({ page }) => {
