@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M3 — not started
+**Resume from:** M4 — not started
 
 ## Stack
 
@@ -52,13 +52,13 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 
 **Definition of done:** App opens to Home (empty list); can navigate to Squad; can add/rename/delete players which persist across page reload.
 
-- [ ] `src/views/home.js` — FINISHED matches list, "Squad" link, "New match" button
-- [ ] `src/views/squad.js` — list, add, rename (inline edit), delete (with confirm)
-- [ ] Render helpers / DOM utilities (no framework — small `h(tag, props, children)` helper or template literals + `innerHTML`, pick one and stick with it)
-- [ ] Manual check: add 9 players, reload page, players still there
-- [ ] Manual check: hard refresh after delete — deletion persisted
+- [x] `src/views/home.js` — FINISHED matches list, "Squad" link, "New match" button
+- [x] `src/views/squad.js` — list, add, rename (inline edit), delete (with confirm)
+- [x] Render helpers — template literals + innerHTML, consistent throughout
+- [x] Manual check: add 9 players, reload page, players still there (Playwright verified)
+- [x] Manual check: hard refresh after delete — deletion persisted (Playwright verified)
 
-**Status:** not started
+**Status:** complete
 **Notes:**
 
 ---
