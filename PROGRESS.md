@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** complete
+**Resume from:** M6 complete
 
 ## Stack
 
@@ -94,6 +94,22 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 
 **Status:** complete
 **Notes:**
+
+---
+
+## M6 — Variable team sizes, new lineup UX, button sub picker
+
+**Definition of done:** Field size is configurable (2–20); halves default to 25 min; all squad players default to Field in lineup; sub picker uses buttons not prompt.
+
+- [x] Minimum squad requirement lowered to 2 players (was 9)
+- [x] Half length default changed to 25 min (was 20)
+- [x] "Players on field" input added to new-match form (default 7, range 2–20)
+- [x] Lineup UX: all players default to Field; Field/GK/Bench buttons per player; GK auto-demotes previous GK
+- [x] Validation: 1 GK + (fieldSize−1) outfielders required; bench = remainder
+- [x] Sub picker: clicking "Sub in" shows outfielders as buttons instead of prompt; Cancel exits picking mode
+- [x] Suggest sub uses same button flow after confirm dialog
+
+**Status:** complete
 
 ---
 
