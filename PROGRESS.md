@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M8 complete
+**Resume from:** M9.1 complete; M9.2 next
 
 ## Stack
 
@@ -185,6 +185,38 @@ Two small features delivered as separate commits.
 - [x] Per-second clock tick patches the clock display in place when the input is focused, to preserve focus and unsubmitted text
 
 **Status:** complete
+
+---
+
+## M9 — Stats screen + match archiving
+
+Two small features delivered as separate commits.
+
+### M9.1 — Stats screen (POTD + keeper halves), keepers shown in match history
+
+**Definition of done:** "Awards" link on Home renamed to "Stats" and points to `/stats`. Stats view shows per-player POTD count and number of halves played in goal, sorted by POTD desc. Each finished-match row on Home shows the keepers for half 1 and half 2.
+
+- [x] `src/stats.js` — `keepersPerHalf(stints, halfLengthSec)` and `computePlayerStats(players, matches, stints)`; pure functions
+- [x] `src/stats.test.js` — node:test covering both halves, mid-half goalie change, finished-only filter
+- [x] `src/views/stats.js` — replaces `src/views/potd-history.js`; shows POTD ⭐ and keeper-halves 🧤 per player
+- [x] Home: link renamed to "Stats", route updated to `/stats`, finished matches show "🧤 H1Name / H2Name"
+- [x] Route registered in `main.js`
+- [x] `package.json` test:unit script broadened to `src/*.test.js`
+
+**Status:** complete
+**Notes:** Pre-existing `tests/m4-match-flow.spec.js` and `tests/m5-smoke.spec.js` Playwright tests have been broken since M6 (they target the old `.player-check` checkbox UI that was replaced with Field/GK/Bench buttons). Not addressed here — out of scope for this change.
+
+### M9.2 — Archive matches
+
+**Definition of done:** Matches can be archived. Archived matches are hidden from the main Home list and excluded from Stats. A "Show archived" toggle at the bottom of Home reveals them; hidden by default.
+
+- [ ] Match record gains `archived: boolean` (default false)
+- [ ] Archive/unarchive control accessible from a finished match
+- [ ] Home filters out archived from finished list and Live section
+- [ ] Stats (POTD + keeper halves) excludes archived matches
+- [ ] Home "Show archived" expander at bottom; collapsed by default
+
+**Status:** pending
 
 ---
 

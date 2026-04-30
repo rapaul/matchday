@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:unit": "node --test src/sub-suggester.test.js",
+    "test:unit": "node --test src/*.test.js",
     "test:e2e": "playwright test",
-    "test": "node --test src/sub-suggester.test.js && playwright test"
+    "test": "node --test src/*.test.js && playwright test"
   },
   "keywords": [],
   "author": "",
