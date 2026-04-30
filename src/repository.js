@@ -2,6 +2,7 @@ import {
   loadPlayers, savePlayers,
   loadMatches, saveMatches,
   loadStints, saveStints,
+  loadTeamName, saveTeamName,
 } from './storage.js';
 
 function uuid() {
@@ -80,3 +81,7 @@ export function updateStint(id, patch) {
   const stints = loadStints().map(s => s.id === id ? { ...s, ...patch } : s);
   saveStints(stints);
 }
+
+// --- Team name ---
+export function getTeamName() { return loadTeamName(); }
+export function setTeamName(name) { saveTeamName(name); }

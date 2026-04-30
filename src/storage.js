@@ -32,3 +32,12 @@ export function saveMatches(matches) { save('matches', matches); }
 
 export function loadStints() { return load('stints'); }
 export function saveStints(stints) { save('stints', stints); }
+
+export function loadTeamName() {
+  checkSchema();
+  return localStorage.getItem('teamName') ?? '';
+}
+export function saveTeamName(name) {
+  checkSchema();
+  localStorage.setItem('teamName', name);
+}

@@ -121,12 +121,12 @@ Four small features delivered as separate commits.
 
 **Definition of done:** Team name is set on the Squad screen (defaults to "Us"). Finished-match list shows "TeamName goalsUs–goalsThem Opponent" instead of "vs Opponent".
 
-- [ ] Storage: `loadTeamName()` / `saveTeamName()` (single string under `teamName` key)
-- [ ] Squad screen: editable team name field at the top
-- [ ] Home: finished-match rows render with team name vs opponent
-- [ ] Default to "Us" when unset
+- [x] Storage: `loadTeamName()` / `saveTeamName()` (single string under `teamName` key)
+- [x] Squad screen: editable team name field at the top
+- [x] Home: finished-match rows render with team name vs opponent
+- [x] Default to "Us" when unset
 
-**Status:** pending
+**Status:** complete
 
 ### M7.2 — Pick POTD any time during match
 

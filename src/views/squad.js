@@ -1,4 +1,4 @@
-import { getPlayers, addPlayer, updatePlayer, deletePlayer } from '../repository.js';
+import { getPlayers, addPlayer, updatePlayer, deletePlayer, getTeamName, setTeamName } from '../repository.js';
 
 export function squadView() {
   const el = document.createElement('div');
@@ -7,12 +7,17 @@ export function squadView() {
 
   function render() {
     const players = getPlayers();
+    const teamName = getTeamName();
     el.innerHTML = `
       <div class="page-header">
         <a href="#/home" class="back-link">← Home</a>
         <h1>Squad</h1>
       </div>
       <div class="page-body">
+        <label for="team-name" style="display:block;margin-bottom:0.5rem;">Team name</label>
+        <input id="team-name" type="text" placeholder="Us" value="${escHtml(teamName)}"
+          style="width:100%;padding:0.625rem;border:1px solid #ccc;border-radius:0.5rem;font:inherit;margin-bottom:1rem;"
+          maxlength="40">
         ${players.length === 0
           ? `<p class="empty-state">No players yet. Add one below.</p>`
           : `<ul class="item-list" id="player-list">${players.map(p => playerRow(p)).join('')}</ul>`
@@ -24,6 +29,10 @@ export function squadView() {
           <button type="submit" class="btn-primary">Add</button>
         </form>
       </div>`;
+
+    el.querySelector('#team-name').addEventListener('blur', e => {
+      setTeamName(e.target.value.trim());
+    });
 
     el.querySelector('#add-form').addEventListener('submit', e => {
       e.preventDefault();

@@ -1,4 +1,4 @@
-import { getMatches, getPlayers } from '../repository.js';
+import { getMatches, getPlayers, getTeamName } from '../repository.js';
 import { navigate } from '../router.js';
 
 export function homeView() {
@@ -6,6 +6,7 @@ export function homeView() {
 
   const matches = getMatches().filter(m => m.status === 'FINISHED').reverse();
   const players = getPlayers();
+  const teamName = getTeamName() || 'Us';
 
   const matchRows = matches.length === 0
     ? `<p class="empty-state">No finished matches yet.</p>`
@@ -13,8 +14,8 @@ export function homeView() {
         const potd = m.potdPlayerId ? players.find(p => p.id === m.potdPlayerId) : null;
         return `<li class="item-row">
           <div class="item-row-label">
-            vs ${m.opponent}<br>
-            <small>${m.goalsUs}–${m.goalsThem}${potd ? ` · POTD: ${potd.name}` : ''}</small>
+            ${escHtml(teamName)} ${m.goalsUs}–${m.goalsThem} ${m.opponent}
+            ${potd ? `<br><small>· POTD: ${potd.name}</small>` : ''}
           </div>
         </li>`;
       }).join('')}</ul>`;
@@ -33,4 +34,8 @@ export function homeView() {
 
   el.querySelector('#new-match-btn').addEventListener('click', () => navigate('/new-match'));
   return el;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
