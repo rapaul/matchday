@@ -24,7 +24,14 @@ export function liveMatchView({ id }) {
   const clock = createClock(sec => {
     if (match.status === 'LIVE') {
       persistClockState();
-      render(sec);
+      // Don't blow away focus while the user is editing the opponent name —
+      // just patch the clock display text in place.
+      if (document.activeElement?.id === 'opponent-input') {
+        const display = el.querySelector('#clock-display');
+        if (display) display.textContent = fmtTime(sec);
+      } else {
+        render(sec);
+      }
     }
   }, { elapsed: initialElapsed, startWall: initialStartWall });
 
@@ -61,7 +68,10 @@ export function liveMatchView({ id }) {
     el.innerHTML = `
       <div class="page-header">
         <a href="#/home" class="back-link" id="exit-link">← Home</a>
-        <h1 style="font-size:1rem;">vs ${escHtml(match.opponent)}</h1>
+        <label style="font-size:1rem;font-weight:600;">vs
+          <input id="opponent-input" type="text" maxlength="40" value="${escHtml(match.opponent)}"
+            style="font:inherit;padding:0.25rem 0.5rem;border:1px solid #ccc;border-radius:0.375rem;width:10rem;">
+        </label>
       </div>
       <div class="page-body">
         ${pickingPotd ? `
@@ -148,6 +158,10 @@ export function liveMatchView({ id }) {
       </div>`;
 
     // Bind events
+
+    el.querySelector('#opponent-input')?.addEventListener('input', e => {
+      match = updateMatch(id, { opponent: e.target.value });
+    });
 
     if (pickingPotd) {
       el.querySelectorAll('[data-pick-potd]').forEach(btn => {

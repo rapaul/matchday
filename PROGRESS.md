@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M8 in progress
+**Resume from:** M8 complete
 
 ## Stack
 
@@ -180,10 +180,11 @@ Two small features delivered as separate commits.
 
 **Definition of done:** Live match screen renders the opponent name as a text input. Edits are saved to the match record immediately.
 
-- [ ] Replace static `<h1>` with an input bound to `match.opponent`
-- [ ] Persist edits via `updateMatch` on change/blur
+- [x] Replace static `<h1>` with an input bound to `match.opponent`
+- [x] Persist edits via `updateMatch` on every keystroke
+- [x] Per-second clock tick patches the clock display in place when the input is focused, to preserve focus and unsubmitted text
 
-**Status:** pending
+**Status:** complete
 
 ---
 
