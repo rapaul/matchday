@@ -5,14 +5,14 @@ export function newMatchView() {
   const el = document.createElement('div');
   const players = getPlayers();
 
-  if (players.length < 9) {
+  if (players.length < 2) {
     el.innerHTML = `
       <div class="page-header">
         <a href="#/home" class="back-link">← Home</a>
         <h1>New match</h1>
       </div>
       <div class="page-body">
-        <p class="empty-state">You need at least 9 players in your squad to start a match. <a href="#/squad">Add players →</a></p>
+        <p class="empty-state">You need at least 2 players in your squad to start a match. <a href="#/squad">Add players →</a></p>
       </div>`;
     return el;
   }
@@ -29,7 +29,7 @@ export function newMatchView() {
           style="width:100%;padding:0.625rem;border:1px solid #ccc;border-radius:0.5rem;font:inherit;margin-bottom:1rem;">
 
         <label style="display:block;margin-bottom:0.25rem;font-weight:500;">Half length (minutes)</label>
-        <input id="half-length" type="number" value="20" min="5" max="60" required
+        <input id="half-length" type="number" value="25" min="5" max="60" required
           style="width:100%;padding:0.625rem;border:1px solid #ccc;border-radius:0.5rem;font:inherit;margin-bottom:1rem;">
 
         <p style="font-weight:500;margin-bottom:0.5rem;">Lineup — pick 1 goalie, 6 outfielders, 2 bench</p>
