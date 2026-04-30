@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M6 complete
+**Resume from:** M7 in progress
 
 ## Stack
 
@@ -110,6 +110,57 @@ Rationale: zero toolchain means the file you edit is the file that runs. If we o
 - [x] Suggest sub uses same button flow after confirm dialog
 
 **Status:** complete
+
+---
+
+## M7 — Team name, in-match POTD, resume live matches, POTD history
+
+Four small features delivered as separate commits.
+
+### M7.1 — Team name
+
+**Definition of done:** Team name is set on the Squad screen (defaults to "Us"). Finished-match list shows "TeamName goalsUs–goalsThem Opponent" instead of "vs Opponent".
+
+- [ ] Storage: `loadTeamName()` / `saveTeamName()` (single string under `teamName` key)
+- [ ] Squad screen: editable team name field at the top
+- [ ] Home: finished-match rows render with team name vs opponent
+- [ ] Default to "Us" when unset
+
+**Status:** pending
+
+### M7.2 — Pick POTD any time during match
+
+**Definition of done:** Live match screen has a "Player of the Day" button that opens a button-list of squad players (same pattern as sub picker). Selecting one saves `potdPlayerId` immediately. Currently-selected POTD shown on screen. End-match no longer prompts if POTD already set.
+
+- [ ] "Player of the Day" button on live match (and visible at half time)
+- [ ] Picker uses player-name buttons + Cancel
+- [ ] Saved selection persists immediately via `updateMatch`
+- [ ] Live match shows current POTD (with option to change)
+- [ ] End match skips POTD prompt when one is already set
+
+**Status:** pending
+
+### M7.3 — Resume in-progress matches from Home
+
+**Definition of done:** Match record persists clock state. Home shows a "Live" section listing LIVE/HALF_TIME matches with a tap-to-resume link. Re-entering live-match restores the clock to the right elapsed value. Leaving the screen mid-match no longer requires a confirm (it's expected behaviour).
+
+- [ ] Match record gains `clockElapsedSec` + `clockStartWall` fields
+- [ ] `createClock` accepts initial state (elapsed + startWall)
+- [ ] Clock state saved on tick / pause / resume
+- [ ] Home shows in-progress matches above finished list, linking to `/live-match/{id}`
+- [ ] Exit confirm dialog removed (or softened) — leaving is allowed
+
+**Status:** pending
+
+### M7.4 — POTD history view
+
+**Definition of done:** New view at `/potd-history` lists every squad player with their POTD count, sorted descending. Players with 0 awards are shown last. Link visible from Home.
+
+- [ ] `src/views/potd-history.js` — count POTDs per player, sort, render
+- [ ] Route registered in `main.js`
+- [ ] Link on Home (e.g. next to Squad)
+
+**Status:** pending
 
 ---
 
