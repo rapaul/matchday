@@ -39,6 +39,7 @@ export function homeView() {
     <div class="page-header">
       <h1>Match Tracker</h1>
       <a href="#/squad" class="btn-secondary btn-sm" style="text-decoration:none;padding:0.375rem 0.75rem;border-radius:0.5rem;font:inherit;">Squad</a>
+      <a href="#/potd-history" class="btn-secondary btn-sm" style="text-decoration:none;padding:0.375rem 0.75rem;border-radius:0.5rem;font:inherit;">Awards</a>
     </div>
     <div class="page-body">
       ${liveSection}

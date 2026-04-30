@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M7 in progress
+**Resume from:** M7 complete
 
 ## Stack
 
@@ -156,11 +156,11 @@ Four small features delivered as separate commits.
 
 **Definition of done:** New view at `/potd-history` lists every squad player with their POTD count, sorted descending. Players with 0 awards are shown last. Link visible from Home.
 
-- [ ] `src/views/potd-history.js` — count POTDs per player, sort, render
-- [ ] Route registered in `main.js`
-- [ ] Link on Home (e.g. next to Squad)
+- [x] `src/views/potd-history.js` — count POTDs per player, sort, render
+- [x] Route registered in `main.js`
+- [x] Link on Home (e.g. next to Squad)
 
-**Status:** pending
+**Status:** complete
 
 ---
 
