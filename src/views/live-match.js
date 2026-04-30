@@ -16,6 +16,7 @@ export function liveMatchView({ id }) {
   const playerMap = Object.fromEntries(players.map(p => [p.id, p]));
 
   let pendingSubId = null;
+  let pickingPotd = false;
 
   const clock = createClock(sec => {
     if (match.status === 'LIVE') render(sec);
@@ -36,6 +37,7 @@ export function liveMatchView({ id }) {
     const isPicking = pendingSubId !== null;
 
     const incomingName = isPicking ? (playerMap[pendingSubId]?.name ?? '?') : '';
+    const potdName = match.potdPlayerId ? (playerMap[match.potdPlayerId]?.name ?? '?') : null;
 
     el.innerHTML = `
       <div class="page-header">
@@ -43,13 +45,27 @@ export function liveMatchView({ id }) {
         <h1 style="font-size:1rem;">vs ${escHtml(match.opponent)}</h1>
       </div>
       <div class="page-body">
+        ${pickingPotd ? `
+          <p style="font-weight:600;margin-bottom:0.5rem;">Pick Player of the Day:</p>
+          <ul class="item-list" style="margin-bottom:1rem;">
+            ${players.map(p => `
+              <li class="item-row">
+                <button class="btn-secondary btn-full" data-pick-potd="${p.id}">${escHtml(p.name)}</button>
+              </li>
+            `).join('') || '<li class="item-row"><span class="item-row-label">—</span></li>'}
+          </ul>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <button class="btn-secondary btn-full" id="cancel-potd-btn">Cancel</button>
+          </div>
+        ` : `
         <!-- Score row -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:1rem;padding:0.75rem;background:#f0ebfb;border-radius:0.5rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:1rem;padding:0.75rem;background:#f0ebfb;border-radius:0.5rem;margin-bottom:0.5rem;">
           <button class="btn-primary btn-sm" id="goal-us">+Us</button>
           <span style="font-size:1.5rem;font-weight:700;">${match.goalsUs} – ${match.goalsThem}</span>
           <button class="btn-secondary btn-sm" id="goal-them">+Them</button>
           <span style="font-size:0.875rem;color:#555;margin-left:0.5rem;" id="clock-display">${fmtTime(clockSec ?? clock.getSec())}</span>
         </div>
+        ${potdName ? `<p style="font-size:0.875rem;color:#555;text-align:center;margin-bottom:1rem;">POTD: ${escHtml(potdName)}</p>` : '<div style="margin-bottom:1rem;"></div>'}
 
         <!-- On field -->
         <p style="font-weight:600;margin-bottom:0.5rem;">
@@ -96,6 +112,9 @@ export function liveMatchView({ id }) {
           ${isPicking
             ? `<button class="btn-secondary btn-full" id="cancel-sub-btn">Cancel sub</button>`
             : `<button class="btn-secondary btn-full" id="suggest-sub-btn">Suggest sub</button>`}
+          ${(isLive || isHalfTime) && !isPicking
+            ? `<button class="btn-secondary btn-full" id="potd-btn">${potdName ? 'Change Player of the Day' : 'Player of the Day'}</button>`
+            : ''}
           ${isLive && match.halfLengthSec > 0 && !isPicking
             ? `<button class="btn-secondary btn-full" id="half-time-btn">Half time</button>`
             : ''}
@@ -106,9 +125,29 @@ export function liveMatchView({ id }) {
             ? `<button class="btn-danger btn-full" id="end-match-btn">End match</button>`
             : ''}
         </div>
+        `}
       </div>`;
 
     // Bind events
+    el.querySelector('#exit-link').addEventListener('click', e => {
+      if (!confirm('Leave this match? The clock will stop.')) e.preventDefault();
+    });
+
+    if (pickingPotd) {
+      el.querySelectorAll('[data-pick-potd]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          match = updateMatch(id, { potdPlayerId: btn.dataset.pickPotd });
+          pickingPotd = false;
+          render(clock.getSec());
+        });
+      });
+      el.querySelector('#cancel-potd-btn')?.addEventListener('click', () => {
+        pickingPotd = false;
+        render(clock.getSec());
+      });
+      return;
+    }
+
     el.querySelector('#goal-us').addEventListener('click', () => {
       match = updateMatch(id, { goalsUs: match.goalsUs + 1 });
       render(clock.getSec());
@@ -172,8 +211,9 @@ export function liveMatchView({ id }) {
 
     el.querySelector('#end-match-btn')?.addEventListener('click', endMatch);
 
-    el.querySelector('#exit-link').addEventListener('click', e => {
-      if (!confirm('Leave this match? The clock will stop.')) e.preventDefault();
+    el.querySelector('#potd-btn')?.addEventListener('click', () => {
+      pickingPotd = true;
+      render(clock.getSec());
     });
   }
 
@@ -211,6 +251,17 @@ export function liveMatchView({ id }) {
 
   function endMatch() {
     const s = stints();
+    const sec = clock.getSec();
+
+    if (match.potdPlayerId) {
+      clock.pause();
+      const openStints = s.filter(st => st.endSec === null);
+      for (const st of openStints) closeStint(st.id, sec);
+      updateMatch(id, { status: 'FINISHED' });
+      navigate('/home');
+      return;
+    }
+
     const onField = s.filter(st => (st.role === 'FIELD' || st.role === 'GOALIE') && st.endSec === null);
     const eligible = onField.map(st => playerMap[st.playerId]?.name ?? st.playerId);
 
@@ -218,7 +269,6 @@ export function liveMatchView({ id }) {
       `End match!\nPick Player of the Day:\n\n${eligible.join('\n')}\n\n(type the name exactly)`
     );
 
-    const sec = clock.getSec();
     clock.pause();
 
     const openStints = s.filter(st => st.endSec === null);

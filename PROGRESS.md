@@ -132,13 +132,13 @@ Four small features delivered as separate commits.
 
 **Definition of done:** Live match screen has a "Player of the Day" button that opens a button-list of squad players (same pattern as sub picker). Selecting one saves `potdPlayerId` immediately. Currently-selected POTD shown on screen. End-match no longer prompts if POTD already set.
 
-- [ ] "Player of the Day" button on live match (and visible at half time)
-- [ ] Picker uses player-name buttons + Cancel
-- [ ] Saved selection persists immediately via `updateMatch`
-- [ ] Live match shows current POTD (with option to change)
-- [ ] End match skips POTD prompt when one is already set
+- [x] "Player of the Day" button on live match (and visible at half time)
+- [x] Picker uses player-name buttons + Cancel
+- [x] Saved selection persists immediately via `updateMatch`
+- [x] Live match shows current POTD (with option to change)
+- [x] End match skips POTD prompt when one is already set
 
-**Status:** pending
+**Status:** complete
 
 ### M7.3 — Resume in-progress matches from Home
 
