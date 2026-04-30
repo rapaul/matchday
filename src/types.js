@@ -19,6 +19,8 @@
  * @property {number} goalsThem
  * @property {string|null} potdPlayerId
  * @property {number} createdAt  - epoch ms
+ * @property {number} clockElapsedSec  - seconds accumulated while clock was running (excluding the current run)
+ * @property {number|null} clockStartWall  - epoch ms when the clock was last resumed; null when paused
  */
 
 /**

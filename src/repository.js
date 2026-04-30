@@ -45,6 +45,8 @@ export function createMatch({ opponent, halfLengthSec }) {
     goalsThem: 0,
     potdPlayerId: null,
     createdAt: Date.now(),
+    clockElapsedSec: 0,
+    clockStartWall: null,
   };
   matches.push(match);
   saveMatches(matches);

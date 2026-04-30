@@ -144,13 +144,13 @@ Four small features delivered as separate commits.
 
 **Definition of done:** Match record persists clock state. Home shows a "Live" section listing LIVE/HALF_TIME matches with a tap-to-resume link. Re-entering live-match restores the clock to the right elapsed value. Leaving the screen mid-match no longer requires a confirm (it's expected behaviour).
 
-- [ ] Match record gains `clockElapsedSec` + `clockStartWall` fields
-- [ ] `createClock` accepts initial state (elapsed + startWall)
-- [ ] Clock state saved on tick / pause / resume
-- [ ] Home shows in-progress matches above finished list, linking to `/live-match/{id}`
-- [ ] Exit confirm dialog removed (or softened) — leaving is allowed
+- [x] Match record gains `clockElapsedSec` + `clockStartWall` fields
+- [x] `createClock` accepts initial state (elapsed + startWall)
+- [x] Clock state saved on tick / pause / resume
+- [x] Home shows in-progress matches above finished list, linking to `/live-match/{id}`
+- [x] Exit confirm dialog removed (or softened) — leaving is allowed
 
-**Status:** pending
+**Status:** complete
 
 ### M7.4 — POTD history view
 

@@ -18,11 +18,30 @@ export function liveMatchView({ id }) {
   let pendingSubId = null;
   let pickingPotd = false;
 
-  const clock = createClock(sec => {
-    if (match.status === 'LIVE') render(sec);
-  });
+  const initialElapsed = match.clockElapsedSec ?? 0;
+  const initialStartWall = match.clockStartWall ?? null;
 
-  if (match.status === 'LIVE') clock.start();
+  const clock = createClock(sec => {
+    if (match.status === 'LIVE') {
+      persistClockState();
+      render(sec);
+    }
+  }, { elapsed: initialElapsed, startWall: initialStartWall });
+
+  // Fresh LIVE entry (e.g. just kicked off from new-match) — startWall not yet
+  // set, so begin the clock. If startWall was already non-null, the clock
+  // self-resumed inside createClock.
+  if (match.status === 'LIVE' && initialStartWall === null) {
+    clock.start();
+    persistClockState();
+  }
+
+  function persistClockState() {
+    match = updateMatch(id, {
+      clockElapsedSec: clock.getElapsed(),
+      clockStartWall: clock.getStartWall(),
+    });
+  }
 
   function stints() { return getStintsForMatch(id); }
 
@@ -129,9 +148,6 @@ export function liveMatchView({ id }) {
       </div>`;
 
     // Bind events
-    el.querySelector('#exit-link').addEventListener('click', e => {
-      if (!confirm('Leave this match? The clock will stop.')) e.preventDefault();
-    });
 
     if (pickingPotd) {
       el.querySelectorAll('[data-pick-potd]').forEach(btn => {
@@ -199,13 +215,18 @@ export function liveMatchView({ id }) {
 
     el.querySelector('#half-time-btn')?.addEventListener('click', () => {
       clock.pause();
-      match = updateMatch(id, { status: 'HALF_TIME' });
+      match = updateMatch(id, {
+        status: 'HALF_TIME',
+        clockElapsedSec: clock.getElapsed(),
+        clockStartWall: null,
+      });
       render(clock.getSec());
     });
 
     el.querySelector('#second-half-btn')?.addEventListener('click', () => {
       match = updateMatch(id, { status: 'LIVE' });
       clock.start();
+      persistClockState();
       render(clock.getSec());
     });
 
@@ -257,7 +278,11 @@ export function liveMatchView({ id }) {
       clock.pause();
       const openStints = s.filter(st => st.endSec === null);
       for (const st of openStints) closeStint(st.id, sec);
-      updateMatch(id, { status: 'FINISHED' });
+      updateMatch(id, {
+        status: 'FINISHED',
+        clockElapsedSec: clock.getElapsed(),
+        clockStartWall: null,
+      });
       navigate('/home');
       return;
     }
@@ -280,7 +305,12 @@ export function liveMatchView({ id }) {
       potdId = potdPlayer?.id ?? null;
     }
 
-    updateMatch(id, { status: 'FINISHED', potdPlayerId: potdId });
+    updateMatch(id, {
+      status: 'FINISHED',
+      potdPlayerId: potdId,
+      clockElapsedSec: clock.getElapsed(),
+      clockStartWall: null,
+    });
     navigate('/home');
   }
 
