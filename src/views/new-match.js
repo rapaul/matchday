@@ -17,6 +17,8 @@ export function newMatchView() {
     return el;
   }
 
+  const roles = Object.fromEntries(players.map(p => [p.id, 'FIELD']));
+
   el.innerHTML = `
     <div class="page-header">
       <a href="#/home" class="back-link">← Home</a>
@@ -32,50 +34,70 @@ export function newMatchView() {
         <input id="half-length" type="number" value="25" min="5" max="60" required
           style="width:100%;padding:0.625rem;border:1px solid #ccc;border-radius:0.5rem;font:inherit;margin-bottom:1rem;">
 
-        <p style="font-weight:500;margin-bottom:0.5rem;">Lineup — pick 1 goalie, 6 outfielders, 2 bench</p>
-        <div id="player-picker">
-          ${players.map(p => `
-            <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;border:1px solid #e5e5e5;border-radius:0.5rem;margin-bottom:0.5rem;cursor:pointer;">
-              <input type="checkbox" class="player-check" data-id="${p.id}" style="accent-color:#6c3fc5;">
-              <span>${escHtml(p.name)}</span>
-              <select class="role-select" data-id="${p.id}" disabled
-                style="margin-left:auto;padding:0.25rem;border:1px solid #ccc;border-radius:0.25rem;font:inherit;font-size:0.875rem;background:#fff;">
-                <option value="FIELD">Outfield</option>
-                <option value="GOALIE">Goalie</option>
-                <option value="BENCH">Bench</option>
-              </select>
-            </label>`).join('')}
-        </div>
+        <label style="display:block;margin-bottom:0.25rem;font-weight:500;">Players on field (inc. goalie)</label>
+        <input id="field-size" type="number" value="7" min="2" max="20" required
+          style="width:100%;padding:0.625rem;border:1px solid #ccc;border-radius:0.5rem;font:inherit;margin-bottom:1rem;">
+
+        <p style="font-weight:500;margin-bottom:0.5rem;">Lineup</p>
+        <ul class="item-list" id="player-picker" style="margin-bottom:0.75rem;"></ul>
         <div id="lineup-summary" style="margin:0.75rem 0;font-size:0.875rem;color:#555;"></div>
         <button type="submit" class="btn-primary btn-full" id="kickoff-btn" disabled>Kick off</button>
       </form>
     </div>`;
 
-  function updateSummary() {
-    const checks = [...el.querySelectorAll('.player-check:checked')];
-    const roles = checks.map(c => el.querySelector(`.role-select[data-id="${c.dataset.id}"]`).value);
-    const goalies = roles.filter(r => r === 'GOALIE').length;
-    const outfield = roles.filter(r => r === 'FIELD').length;
-    const bench = roles.filter(r => r === 'BENCH').length;
-    el.querySelector('#lineup-summary').textContent =
-      `Selected: ${checks.length}/9 · Outfield: ${outfield}/6 · Goalie: ${goalies}/1 · Bench: ${bench}/2`;
-    const ok = checks.length === 9 && goalies === 1 && outfield === 6 && bench === 2;
-    el.querySelector('#kickoff-btn').disabled = !ok;
+  function getFieldSize() {
+    return Math.max(2, Math.min(20, Number(el.querySelector('#field-size').value) || 7));
   }
 
-  el.querySelectorAll('.player-check').forEach(cb => {
-    cb.addEventListener('change', () => {
-      const sel = el.querySelector(`.role-select[data-id="${cb.dataset.id}"]`);
-      sel.disabled = !cb.checked;
-      updateSummary();
+  function renderLineup() {
+    el.querySelector('#player-picker').innerHTML = players.map(p => {
+      const role = roles[p.id];
+      return `<li class="item-row">
+        <span class="item-row-label">${escHtml(p.name)}</span>
+        <button type="button" class="btn-sm ${role === 'FIELD' ? 'btn-primary' : 'btn-secondary'}" data-role-field="${p.id}">Field</button>
+        <button type="button" class="btn-sm ${role === 'GOALIE' ? 'btn-primary' : 'btn-secondary'}" data-role-gk="${p.id}">GK</button>
+        <button type="button" class="btn-sm ${role === 'BENCH' ? 'btn-primary' : 'btn-secondary'}" data-role-bench="${p.id}">Bench</button>
+      </li>`;
+    }).join('');
+
+    el.querySelectorAll('[data-role-field]').forEach(btn => {
+      btn.addEventListener('click', () => { roles[btn.dataset.roleField] = 'FIELD'; renderLineup(); });
     });
-  });
+    el.querySelectorAll('[data-role-gk]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        for (const id of Object.keys(roles)) { if (roles[id] === 'GOALIE') roles[id] = 'FIELD'; }
+        roles[btn.dataset.roleGk] = 'GOALIE';
+        renderLineup();
+      });
+    });
+    el.querySelectorAll('[data-role-bench]').forEach(btn => {
+      btn.addEventListener('click', () => { roles[btn.dataset.roleBench] = 'BENCH'; renderLineup(); });
+    });
 
-  el.querySelectorAll('.role-select').forEach(sel => {
-    sel.addEventListener('change', updateSummary);
-  });
+    updateSummary();
+  }
 
-  updateSummary();
+  function updateSummary() {
+    const fieldSize = getFieldSize();
+    const goalies = Object.values(roles).filter(r => r === 'GOALIE').length;
+    const outfield = Object.values(roles).filter(r => r === 'FIELD').length;
+    const bench = Object.values(roles).filter(r => r === 'BENCH').length;
+
+    if (players.length < fieldSize) {
+      el.querySelector('#lineup-summary').textContent =
+        `Need at least ${fieldSize} players for this field size (have ${players.length})`;
+      el.querySelector('#kickoff-btn').disabled = true;
+      return;
+    }
+
+    el.querySelector('#lineup-summary').textContent =
+      `On field: ${goalies + outfield}/${fieldSize} · Goalie: ${goalies}/1 · Bench: ${bench}`;
+    el.querySelector('#kickoff-btn').disabled = !(goalies === 1 && outfield === fieldSize - 1);
+  }
+
+  el.querySelector('#field-size').addEventListener('change', () => { renderLineup(); });
+
+  renderLineup();
 
   el.querySelector('#new-match-form').addEventListener('submit', e => {
     e.preventDefault();
@@ -83,10 +105,9 @@ export function newMatchView() {
     const halfLengthSec = Number(el.querySelector('#half-length').value) * 60;
     const match = createMatch({ opponent, halfLengthSec });
 
-    el.querySelectorAll('.player-check:checked').forEach(cb => {
-      const role = el.querySelector(`.role-select[data-id="${cb.dataset.id}"]`).value;
-      openStint({ matchId: match.id, playerId: cb.dataset.id, role, startSec: 0 });
-    });
+    for (const [playerId, role] of Object.entries(roles)) {
+      openStint({ matchId: match.id, playerId, role, startSec: 0 });
+    }
 
     updateMatch(match.id, { status: 'LIVE' });
     navigate(`/live-match/${match.id}`);
