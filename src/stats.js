@@ -32,7 +32,7 @@ export function keepersPerHalf(stints, halfLengthSec) {
  */
 export function computePlayerStats(players, matches, stints) {
   const out = new Map(players.map(p => [p.id, { id: p.id, name: p.name, potd: 0, keeperHalves: 0 }]));
-  const finished = matches.filter(m => m.status === 'FINISHED');
+  const finished = matches.filter(m => m.status === 'FINISHED' && !m.archived);
 
   const stintsByMatch = new Map();
   for (const s of stints) {

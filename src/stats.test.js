@@ -41,6 +41,21 @@ test('keepersPerHalf — non-goalie stints ignored', () => {
   assert.deepEqual(half2, []);
 });
 
+test('computePlayerStats — archived matches excluded', () => {
+  const players = [{ id: 'p1', name: 'Alice' }];
+  const matches = [
+    { id: 'm1', status: 'FINISHED', halfLengthSec: HALF, potdPlayerId: 'p1', archived: false },
+    { id: 'm2', status: 'FINISHED', halfLengthSec: HALF, potdPlayerId: 'p1', archived: true },
+  ];
+  const stints = [
+    { id: 's1', matchId: 'm1', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 },
+    { id: 's2', matchId: 'm2', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 },
+  ];
+  const [alice] = computePlayerStats(players, matches, stints);
+  assert.equal(alice.potd, 1);
+  assert.equal(alice.keeperHalves, 2);
+});
+
 test('computePlayerStats — POTD and keeper halves aggregated across finished matches only', () => {
   const players = [{ id: 'p1', name: 'Alice' }, { id: 'p2', name: 'Bob' }];
   const matches = [

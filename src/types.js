@@ -21,6 +21,7 @@
  * @property {number} createdAt  - epoch ms
  * @property {number} clockElapsedSec  - seconds accumulated while clock was running (excluding the current run)
  * @property {number|null} clockStartWall  - epoch ms when the clock was last resumed; null when paused
+ * @property {boolean} [archived]  - true when the match is hidden from the main list and excluded from stats
  */
 
 /**

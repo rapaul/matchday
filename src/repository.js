@@ -47,6 +47,7 @@ export function createMatch({ opponent, halfLengthSec }) {
     createdAt: Date.now(),
     clockElapsedSec: 0,
     clockStartWall: null,
+    archived: false,
   };
   matches.push(match);
   saveMatches(matches);

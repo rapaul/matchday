@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M9.1 complete; M9.2 next
+**Resume from:** M9 complete
 
 ## Stack
 
@@ -210,13 +210,13 @@ Two small features delivered as separate commits.
 
 **Definition of done:** Matches can be archived. Archived matches are hidden from the main Home list and excluded from Stats. A "Show archived" toggle at the bottom of Home reveals them; hidden by default.
 
-- [ ] Match record gains `archived: boolean` (default false)
-- [ ] Archive/unarchive control accessible from a finished match
-- [ ] Home filters out archived from finished list and Live section
-- [ ] Stats (POTD + keeper halves) excludes archived matches
-- [ ] Home "Show archived" expander at bottom; collapsed by default
+- [x] Match record gains `archived: boolean` (default false)
+- [x] Archive/unarchive controls on Home rows (both finished and LIVE/HALF_TIME)
+- [x] Home filters out archived from finished list and Live section
+- [x] Stats (POTD + keeper halves) excludes archived matches
+- [x] Home "Show archived" expander at bottom (`<details>`); collapsed by default
 
-**Status:** pending
+**Status:** complete
 
 ---
 
