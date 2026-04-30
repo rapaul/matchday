@@ -2,7 +2,7 @@
 
 Four milestones. Update the checkbox **and** the Status line under each milestone as work proceeds. The "Resume from" line is the single source of truth for where to pick up if work is interrupted.
 
-**Resume from:** M7 complete
+**Resume from:** M8 in progress
 
 ## Stack
 
@@ -161,6 +161,29 @@ Four small features delivered as separate commits.
 - [x] Link on Home (e.g. next to Squad)
 
 **Status:** complete
+
+---
+
+## M8 — Match date + editable opponent
+
+Two small features delivered as separate commits.
+
+### M8.1 — Show match date in history
+
+**Definition of done:** Finished-match rows on Home show the date the match was started (e.g. "30 Apr 2026"). `createdAt` already records this at kickoff.
+
+- [x] Format `createdAt` as a short date below the score line on Home
+
+**Status:** complete
+
+### M8.2 — Editable opponent on live match
+
+**Definition of done:** Live match screen renders the opponent name as a text input. Edits are saved to the match record immediately.
+
+- [ ] Replace static `<h1>` with an input bound to `match.opponent`
+- [ ] Persist edits via `updateMatch` on change/blur
+
+**Status:** pending
 
 ---
 

@@ -27,10 +27,12 @@ export function homeView() {
     ? `<p class="empty-state">No finished matches yet.</p>`
     : `<ul class="item-list">${matches.map(m => {
         const potd = m.potdPlayerId ? players.find(p => p.id === m.potdPlayerId) : null;
+        const date = m.createdAt ? fmtDate(m.createdAt) : '';
         return `<li class="item-row">
           <div class="item-row-label">
-            ${escHtml(teamName)} ${m.goalsUs}–${m.goalsThem} ${m.opponent}
-            ${potd ? `<br><small>· POTD: ${potd.name}</small>` : ''}
+            ${escHtml(teamName)} ${m.goalsUs}–${m.goalsThem} ${escHtml(m.opponent)}
+            ${date ? `<br><small style="color:#777;">${date}</small>` : ''}
+            ${potd ? `<br><small>· POTD: ${escHtml(potd.name)}</small>` : ''}
           </div>
         </li>`;
       }).join('')}</ul>`;
@@ -55,4 +57,8 @@ export function homeView() {
 
 function escHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fmtDate(epochMs) {
+  return new Date(epochMs).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
