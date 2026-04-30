@@ -15,11 +15,7 @@ export function liveMatchView({ id }) {
   const players = getPlayers();
   const playerMap = Object.fromEntries(players.map(p => [p.id, p]));
 
-  // Restore half from status
-  let half = match.status === 'HALF_TIME' ? 1 : (match.status === 'LIVE' ? 1 : 1);
-  // If we previously ended first half, track second half
-  // We'll encode this by checking if the match was resumed
-  let clockOffset = 0; // seconds to add to display (0 for first half, halfLengthSec for second)
+  let pendingSubId = null;
 
   const clock = createClock(sec => {
     if (match.status === 'LIVE') render(sec);
@@ -33,9 +29,13 @@ export function liveMatchView({ id }) {
     const s = stints();
     const onField = s.filter(st => (st.role === 'FIELD' || st.role === 'GOALIE') && st.endSec === null);
     const onBench = s.filter(st => st.role === 'BENCH' && st.endSec === null);
+    const outfielders = onField.filter(st => st.role === 'FIELD');
 
     const isLive = match.status === 'LIVE';
     const isHalfTime = match.status === 'HALF_TIME';
+    const isPicking = pendingSubId !== null;
+
+    const incomingName = isPicking ? (playerMap[pendingSubId]?.name ?? '?') : '';
 
     el.innerHTML = `
       <div class="page-header">
@@ -52,16 +52,23 @@ export function liveMatchView({ id }) {
         </div>
 
         <!-- On field -->
-        <p style="font-weight:600;margin-bottom:0.5rem;">On field</p>
+        <p style="font-weight:600;margin-bottom:0.5rem;">
+          ${isPicking ? `Sub in ${escHtml(incomingName)} — select player to come off:` : 'On field'}
+        </p>
         <ul class="item-list" style="margin-bottom:1rem;">
           ${onField.map(st => {
             const name = playerMap[st.playerId]?.name ?? '?';
             const mins = playerMinutes(s, st.playerId, clockSec ?? clock.getSec());
             const tag = st.role === 'GOALIE' ? ' 🧤' : '';
+            if (isPicking && st.role === 'FIELD') {
+              return `<li class="item-row">
+                <button class="btn-secondary btn-full" data-pick-off="${st.playerId}">${escHtml(name)}</button>
+              </li>`;
+            }
             return `<li class="item-row">
               <span class="item-row-label">${escHtml(name)}${tag}</span>
               <span style="font-size:0.8rem;color:#777;">${Math.floor(mins / 60)}m</span>
-              ${st.role !== 'GOALIE'
+              ${!isPicking && st.role !== 'GOALIE'
                 ? `<button class="btn-secondary btn-sm" data-make-goalie="${st.playerId}">→ GK</button>`
                 : ''}
             </li>`;
@@ -77,21 +84,27 @@ export function liveMatchView({ id }) {
             return `<li class="item-row">
               <span class="item-row-label">${escHtml(name)}</span>
               <span style="font-size:0.8rem;color:#777;">${Math.floor(mins / 60)}m</span>
-              <button class="btn-secondary btn-sm" data-sub-in="${st.playerId}">Sub in</button>
+              ${!isPicking
+                ? `<button class="btn-secondary btn-sm" data-sub-in="${st.playerId}">Sub in</button>`
+                : ''}
             </li>`;
           }).join('') || '<li class="item-row"><span class="item-row-label">—</span></li>'}
         </ul>
 
         <!-- Actions -->
         <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <button class="btn-secondary btn-full" id="suggest-sub-btn">Suggest sub</button>
-          ${isLive && match.halfLengthSec > 0
+          ${isPicking
+            ? `<button class="btn-secondary btn-full" id="cancel-sub-btn">Cancel sub</button>`
+            : `<button class="btn-secondary btn-full" id="suggest-sub-btn">Suggest sub</button>`}
+          ${isLive && match.halfLengthSec > 0 && !isPicking
             ? `<button class="btn-secondary btn-full" id="half-time-btn">Half time</button>`
             : ''}
           ${isHalfTime
             ? `<button class="btn-primary btn-full" id="second-half-btn">Start 2nd half</button>`
             : ''}
-          <button class="btn-danger btn-full" id="end-match-btn">End match</button>
+          ${!isPicking
+            ? `<button class="btn-danger btn-full" id="end-match-btn">End match</button>`
+            : ''}
         </div>
       </div>`;
 
@@ -107,14 +120,30 @@ export function liveMatchView({ id }) {
     });
 
     el.querySelectorAll('[data-sub-in]').forEach(btn => {
-      btn.addEventListener('click', () => pickSubTarget(btn.dataset.subIn));
+      btn.addEventListener('click', () => {
+        if (outfielders.length === 0) { alert('No outfielders to sub.'); return; }
+        pendingSubId = btn.dataset.subIn;
+        render(clock.getSec());
+      });
+    });
+
+    el.querySelectorAll('[data-pick-off]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applySwap(pendingSubId, btn.dataset.pickOff, 'FIELD');
+        pendingSubId = null;
+      });
     });
 
     el.querySelectorAll('[data-make-goalie]').forEach(btn => {
       btn.addEventListener('click', () => changeGoalie(btn.dataset.makeGoalie));
     });
 
-    el.querySelector('#suggest-sub-btn').addEventListener('click', () => {
+    el.querySelector('#cancel-sub-btn')?.addEventListener('click', () => {
+      pendingSubId = null;
+      render(clock.getSec());
+    });
+
+    el.querySelector('#suggest-sub-btn')?.addEventListener('click', () => {
       const s = stints();
       const suggestion = subSuggester(s, clock.getSec());
       if (!suggestion) {
@@ -123,7 +152,9 @@ export function liveMatchView({ id }) {
       }
       const name = playerMap[suggestion]?.name ?? '?';
       if (confirm(`Suggest subbing in: ${name}. Apply?`)) {
-        pickSubTarget(suggestion);
+        if (outfielders.length === 0) { alert('No outfielders to sub.'); return; }
+        pendingSubId = suggestion;
+        render(clock.getSec());
       }
     });
 
@@ -139,7 +170,7 @@ export function liveMatchView({ id }) {
       render(clock.getSec());
     });
 
-    el.querySelector('#end-match-btn').addEventListener('click', endMatch);
+    el.querySelector('#end-match-btn')?.addEventListener('click', endMatch);
 
     el.querySelector('#exit-link').addEventListener('click', e => {
       if (!confirm('Leave this match? The clock will stop.')) e.preventDefault();
@@ -150,19 +181,6 @@ export function liveMatchView({ id }) {
     return stintsArr
       .filter(s => s.playerId === playerId && s.role !== 'GOALIE')
       .reduce((acc, s) => acc + (s.endSec ?? nowSec) - s.startSec, 0);
-  }
-
-  function pickSubTarget(benchPlayerId) {
-    const s = stints();
-    const outfielders = s.filter(st => st.role === 'FIELD' && st.endSec === null);
-    if (outfielders.length === 0) { alert('No outfielders to sub.'); return; }
-
-    const opts = outfielders.map(st => playerMap[st.playerId]?.name ?? st.playerId).join('\n');
-    const name = prompt(`Sub in ${playerMap[benchPlayerId]?.name}.\nReplace which outfielder?\n\n${opts}`);
-    if (!name) return;
-    const target = outfielders.find(st => playerMap[st.playerId]?.name === name.trim());
-    if (!target) { alert('Player not found.'); return; }
-    applySwap(benchPlayerId, target.playerId, 'FIELD');
   }
 
   function changeGoalie(newGoaliePlayerId) {
