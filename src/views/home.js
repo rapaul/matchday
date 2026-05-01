@@ -1,5 +1,6 @@
 import { getMatches, getPlayers, getStints, getTeamName, updateMatch } from '../repository.js';
 import { keepersPerHalf } from '../stats.js';
+import { buildMarkdown, downloadMarkdown } from '../export.js';
 import { navigate } from '../router.js';
 
 export function homeView() {
@@ -33,10 +34,30 @@ export function homeView() {
         <div class="mt-2">
           <button class="btn-primary btn-full" id="new-match-btn">New match</button>
         </div>
+        <div class="mt-2">
+          <button class="btn-secondary btn-full" id="export-btn">Export markdown</button>
+        </div>
         ${renderArchived(archived)}
       </div>`;
 
     el.querySelector('#new-match-btn').addEventListener('click', () => navigate('/new-match'));
+
+    el.querySelector('#export-btn').addEventListener('click', () => {
+      const freshStints = getStints();
+      const freshStintsByMatch = new Map();
+      for (const s of freshStints) {
+        if (!freshStintsByMatch.has(s.matchId)) freshStintsByMatch.set(s.matchId, []);
+        freshStintsByMatch.get(s.matchId).push(s);
+      }
+      const md = buildMarkdown({
+        teamName: getTeamName() || 'Us',
+        players: getPlayers(),
+        matches: getMatches(),
+        stintsByMatch: freshStintsByMatch,
+      });
+      const stamp = new Date().toISOString().slice(0, 10);
+      downloadMarkdown(md, `matchday-${stamp}.md`);
+    });
 
     el.querySelectorAll('[data-archive]').forEach(btn => {
       btn.addEventListener('click', e => {
