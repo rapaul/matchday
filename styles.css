@@ -80,6 +80,15 @@ button {
   background: #d0d0d0;
 }
 
+.btn-secondary.top-played {
+  background: #fde68a;
+  box-shadow: inset 0 0 0 2px #f59e0b;
+}
+
+.btn-secondary.top-played:active {
+  background: #fcd34d;
+}
+
 .btn-danger {
   background: #ef4444;
   color: #fff;

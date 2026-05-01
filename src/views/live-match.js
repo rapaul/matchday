@@ -65,6 +65,19 @@ export function liveMatchView({ id }) {
     const incomingName = isPicking ? (playerMap[pendingSubId]?.name ?? '?') : '';
     const potdName = match.potdPlayerId ? (playerMap[match.potdPlayerId]?.name ?? '?') : null;
 
+    const nowSec = clockSec ?? clock.getSec();
+    let topPlayedIds = null;
+    if (isPicking) {
+      const minsByPlayer = onField
+        .filter(st => st.role === 'FIELD')
+        .map(st => [st.playerId, playerMinutes(s, st.playerId, nowSec)]);
+      const distinct = [...new Set(minsByPlayer.map(([, m]) => m))].sort((a, b) => b - a);
+      const threshold = distinct[1] ?? distinct[0] ?? Infinity;
+      topPlayedIds = new Set(
+        minsByPlayer.filter(([, m]) => m >= threshold).map(([id]) => id)
+      );
+    }
+
     el.innerHTML = `
       <div class="page-header">
         <a href="#/home" class="back-link" id="exit-link">← Home</a>
@@ -106,8 +119,9 @@ export function liveMatchView({ id }) {
             const mins = playerMinutes(s, st.playerId, clockSec ?? clock.getSec());
             const tag = st.role === 'GOALIE' ? ' 🧤' : '';
             if (isPicking && st.role === 'FIELD') {
+              const hot = topPlayedIds.has(st.playerId) ? ' top-played' : '';
               return `<li class="item-row">
-                <button class="btn-secondary btn-full" data-pick-off="${st.playerId}">${escHtml(name)}</button>
+                <button class="btn-secondary btn-full${hot}" data-pick-off="${st.playerId}">${escHtml(name)}</button>
               </li>`;
             }
             return `<li class="item-row">
@@ -255,7 +269,7 @@ export function liveMatchView({ id }) {
 
   function playerMinutes(stintsArr, playerId, nowSec) {
     return stintsArr
-      .filter(s => s.playerId === playerId && s.role !== 'GOALIE')
+      .filter(s => s.playerId === playerId && s.role === 'FIELD')
       .reduce((acc, s) => acc + (s.endSec ?? nowSec) - s.startSec, 0);
   }
 
