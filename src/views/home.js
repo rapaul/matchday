@@ -101,7 +101,7 @@ export function homeView() {
     const potd = m.potdPlayerId ? playerMap[m.potdPlayerId] : null;
     const date = m.createdAt ? fmtDate(m.createdAt) : '';
     const ms = stintsByMatch.get(m.id) ?? [];
-    const { half1, half2 } = keepersPerHalf(ms, m.halfLengthSec);
+    const { half1, half2 } = keepersPerHalf(ms, m.secondHalfStartSec);
     const keeperLine = formatKeepers(half1, half2, playerMap);
     const statusTag = m.status === 'LIVE' ? ' · LIVE' : m.status === 'HALF_TIME' ? ' · HT' : '';
     return `<div class="item-row-label">
@@ -116,12 +116,13 @@ export function homeView() {
   return el;
 }
 
-function formatKeepers(half1Ids, half2Ids, playerMap) {
-  const namesFor = ids => ids.map(id => playerMap[id]?.name).filter(Boolean).join('/');
-  const h1 = namesFor(half1Ids);
-  const h2 = namesFor(half2Ids);
+function formatKeepers(half1Id, half2Id, playerMap) {
+  const h1 = half1Id ? playerMap[half1Id]?.name : null;
+  const h2 = half2Id ? playerMap[half2Id]?.name : null;
   if (!h1 && !h2) return '';
-  return `${escHtml(h1 || '—')} / ${escHtml(h2 || '—')}`;
+  if (!h2) return escHtml(h1);
+  if (!h1) return `— / ${escHtml(h2)}`;
+  return `${escHtml(h1)} / ${escHtml(h2)}`;
 }
 
 function escHtml(s) {

@@ -2,33 +2,33 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { keepersPerHalf, computePlayerStats } from './stats.js';
 
-const HALF = 600; // 10 min half
+const HALF_START = 600; // second half started at clock=600
 
 test('keepersPerHalf — single goalie stint spanning both halves', () => {
   const stints = [{ id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 }];
-  const { half1, half2 } = keepersPerHalf(stints, HALF);
-  assert.deepEqual(half1, ['p1']);
-  assert.deepEqual(half2, ['p1']);
+  const { half1, half2 } = keepersPerHalf(stints, HALF_START);
+  assert.equal(half1, 'p1');
+  assert.equal(half2, 'p1');
 });
 
-test('keepersPerHalf — goalie change at half time exactly', () => {
+test('keepersPerHalf — goalie change at second-half kickoff', () => {
   const stints = [
     { id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 600 },
     { id: 's2', matchId: 'm', playerId: 'p2', role: 'GOALIE', startSec: 600, endSec: 1200 },
   ];
-  const { half1, half2 } = keepersPerHalf(stints, HALF);
-  assert.deepEqual(half1, ['p1']);
-  assert.deepEqual(half2, ['p2']);
+  const { half1, half2 } = keepersPerHalf(stints, HALF_START);
+  assert.equal(half1, 'p1');
+  assert.equal(half2, 'p2');
 });
 
-test('keepersPerHalf — goalie change mid-half-2 credits both keepers for half 2', () => {
+test('keepersPerHalf — mid-half-2 swap does not change the half-2 keeper', () => {
   const stints = [
     { id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 900 },
     { id: 's2', matchId: 'm', playerId: 'p2', role: 'GOALIE', startSec: 900, endSec: 1200 },
   ];
-  const { half1, half2 } = keepersPerHalf(stints, HALF);
-  assert.deepEqual(half1, ['p1']);
-  assert.deepEqual(half2.sort(), ['p1', 'p2']);
+  const { half1, half2 } = keepersPerHalf(stints, HALF_START);
+  assert.equal(half1, 'p1');
+  assert.equal(half2, 'p1');
 });
 
 test('keepersPerHalf — non-goalie stints ignored', () => {
@@ -36,16 +36,23 @@ test('keepersPerHalf — non-goalie stints ignored', () => {
     { id: 's1', matchId: 'm', playerId: 'p1', role: 'FIELD', startSec: 0, endSec: 1200 },
     { id: 's2', matchId: 'm', playerId: 'p2', role: 'BENCH', startSec: 0, endSec: 1200 },
   ];
-  const { half1, half2 } = keepersPerHalf(stints, HALF);
-  assert.deepEqual(half1, []);
-  assert.deepEqual(half2, []);
+  const { half1, half2 } = keepersPerHalf(stints, HALF_START);
+  assert.equal(half1, null);
+  assert.equal(half2, null);
+});
+
+test('keepersPerHalf — no second half yet returns null half2', () => {
+  const stints = [{ id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: null }];
+  const { half1, half2 } = keepersPerHalf(stints, null);
+  assert.equal(half1, 'p1');
+  assert.equal(half2, null);
 });
 
 test('computePlayerStats — archived matches excluded', () => {
   const players = [{ id: 'p1', name: 'Alice' }];
   const matches = [
-    { id: 'm1', status: 'FINISHED', halfLengthSec: HALF, potdPlayerId: 'p1', archived: false },
-    { id: 'm2', status: 'FINISHED', halfLengthSec: HALF, potdPlayerId: 'p1', archived: true },
+    { id: 'm1', status: 'FINISHED', secondHalfStartSec: 600, potdPlayerId: 'p1', archived: false },
+    { id: 'm2', status: 'FINISHED', secondHalfStartSec: 600, potdPlayerId: 'p1', archived: true },
   ];
   const stints = [
     { id: 's1', matchId: 'm1', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 },
@@ -59,9 +66,9 @@ test('computePlayerStats — archived matches excluded', () => {
 test('computePlayerStats — POTD and keeper halves aggregated across finished matches only', () => {
   const players = [{ id: 'p1', name: 'Alice' }, { id: 'p2', name: 'Bob' }];
   const matches = [
-    { id: 'm1', status: 'FINISHED', halfLengthSec: HALF, potdPlayerId: 'p1' },
-    { id: 'm2', status: 'FINISHED', halfLengthSec: HALF, potdPlayerId: 'p2' },
-    { id: 'm3', status: 'LIVE',     halfLengthSec: HALF, potdPlayerId: 'p1' }, // ignored
+    { id: 'm1', status: 'FINISHED', secondHalfStartSec: 600, potdPlayerId: 'p1' },
+    { id: 'm2', status: 'FINISHED', secondHalfStartSec: 600, potdPlayerId: 'p2' },
+    { id: 'm3', status: 'LIVE',     secondHalfStartSec: null, potdPlayerId: 'p1' }, // ignored
   ];
   const stints = [
     // m1: Alice keeper both halves

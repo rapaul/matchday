@@ -1,25 +1,25 @@
 /**
- * Returns the set of player IDs who were goalie during half 1 and half 2,
- * given the stints for a single match and that match's halfLengthSec.
- *
- * Half 1 is clock seconds [0, halfLengthSec); half 2 is [halfLengthSec, ∞).
- * A goalie stint counts towards a half if it overlaps that half's range at all.
+ * Returns the player IDs who were goalie at each half's kickoff: the keeper
+ * is whoever's GOALIE stint is open at clock=0 (half 1) and at
+ * clock=secondHalfStartSec (half 2).
  *
  * @param {import('./types.js').Stint[]} stints  - stints for a single match
- * @param {number} halfLengthSec
- * @returns {{ half1: string[], half2: string[] }}
+ * @param {number|null|undefined} secondHalfStartSec  - clock seconds at which the second half kicked off; null/undefined if half-time hasn't happened yet
+ * @returns {{ half1: string|null, half2: string|null }}
  */
-export function keepersPerHalf(stints, halfLengthSec) {
-  const half1 = new Set();
-  const half2 = new Set();
-  for (const s of stints) {
-    if (s.role !== 'GOALIE') continue;
-    const start = s.startSec;
-    const end = s.endSec ?? Infinity;
-    if (start < halfLengthSec) half1.add(s.playerId);
-    if (end > halfLengthSec) half2.add(s.playerId);
-  }
-  return { half1: [...half1], half2: [...half2] };
+export function keepersPerHalf(stints, secondHalfStartSec) {
+  const goalieAt = sec => {
+    for (const s of stints) {
+      if (s.role !== 'GOALIE') continue;
+      const end = s.endSec ?? Infinity;
+      if (s.startSec <= sec && sec < end) return s.playerId;
+    }
+    return null;
+  };
+  return {
+    half1: goalieAt(0),
+    half2: secondHalfStartSec == null ? null : goalieAt(secondHalfStartSec),
+  };
 }
 
 /**
@@ -45,9 +45,9 @@ export function computePlayerStats(players, matches, stints) {
       out.get(m.potdPlayerId).potd += 1;
     }
     const ms = stintsByMatch.get(m.id) ?? [];
-    const { half1, half2 } = keepersPerHalf(ms, m.halfLengthSec);
-    for (const pid of half1) if (out.has(pid)) out.get(pid).keeperHalves += 1;
-    for (const pid of half2) if (out.has(pid)) out.get(pid).keeperHalves += 1;
+    const { half1, half2 } = keepersPerHalf(ms, m.secondHalfStartSec);
+    if (half1 && out.has(half1)) out.get(half1).keeperHalves += 1;
+    if (half2 && out.has(half2)) out.get(half2).keeperHalves += 1;
   }
 
   return [...out.values()];

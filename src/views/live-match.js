@@ -233,6 +233,7 @@ export function liveMatchView({ id }) {
         status: 'HALF_TIME',
         clockElapsedSec: clock.getElapsed(),
         clockStartWall: null,
+        secondHalfStartSec: clock.getSec(),
       });
       render(clock.getSec());
     });
