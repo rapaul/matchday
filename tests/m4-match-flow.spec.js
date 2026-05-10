@@ -27,10 +27,10 @@ test.beforeEach(async ({ page }) => {
   await seedPlayers(page);
 });
 
-test('new-match shows error if fewer than 9 players', async ({ page }) => {
+test('new-match shows error if fewer than 2 players', async ({ page }) => {
   await page.evaluate(() => localStorage.setItem('players', JSON.stringify([{ id: 'p1', name: 'Solo' }])));
   await page.goto('/#/new-match');
-  await expect(page.locator('.page-body')).toContainText('at least 9 players');
+  await expect(page.locator('.page-body')).toContainText('at least 2 players');
 });
 
 test('new-match kickoff button disabled until valid lineup', async ({ page }) => {

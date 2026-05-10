@@ -26,17 +26,12 @@ test('full end-to-end smoke: add 9 players → start match → score → sub →
   // 3. Start a new match
   await page.goto('/#/new-match');
   await page.fill('#opponent', 'Blue United');
-  const checks = page.locator('.player-check');
-  await checks.nth(0).check();
-  await page.locator('.role-select').nth(0).selectOption('GOALIE');
-  for (let i = 1; i <= 6; i++) await checks.nth(i).check();
-  for (let i = 7; i <= 8; i++) {
-    await checks.nth(i).check();
-    await page.locator('.role-select').nth(i).selectOption('BENCH');
-  }
+  await page.locator('[data-role-gk]').nth(0).click();
+  await page.locator('[data-role-bench]').nth(7).click();
+  await page.locator('[data-role-bench]').nth(8).click();
   await page.click('#kickoff-btn');
   await expect(page).toHaveURL(/live-match/);
-  await expect(page.locator('h1')).toContainText('Blue United');
+  await expect(page.locator('#opponent-input')).toHaveValue('Blue United');
 
   // 4. Score both ways
   await page.click('#goal-us');
@@ -44,9 +39,9 @@ test('full end-to-end smoke: add 9 players → start match → score → sub →
   await page.click('#goal-them');
   await expect(page.locator('text=2 – 1')).toBeVisible();
 
-  // 5. Sub in a bench player
-  page.once('dialog', d => d.accept('Bob'));
+  // 5. Sub in a bench player → pick first outfielder (Bob) to come off
   await page.locator('[data-sub-in]').first().click();
+  await page.locator('[data-pick-off]').first().click();
 
   // 6. Suggest sub (tie → dismiss alert)
   page.once('dialog', d => d.dismiss());
