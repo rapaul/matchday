@@ -60,6 +60,7 @@ export function liveMatchView({ id }) {
 
     const isLive = match.status === 'LIVE';
     const isHalfTime = match.status === 'HALF_TIME';
+    const isFinished = match.status === 'FINISHED';
     const isPicking = pendingSubId !== null;
 
     const incomingName = isPicking ? (playerMap[pendingSubId]?.name ?? '?') : '';
@@ -154,8 +155,8 @@ export function liveMatchView({ id }) {
         <div style="display:flex;flex-direction:column;gap:0.5rem;">
           ${isPicking
             ? `<button class="btn-secondary btn-full" id="cancel-sub-btn">Cancel sub</button>`
-            : `<button class="btn-secondary btn-full" id="suggest-sub-btn">Suggest sub</button>`}
-          ${(isLive || isHalfTime) && !isPicking
+            : (!isFinished ? `<button class="btn-secondary btn-full" id="suggest-sub-btn">Suggest sub</button>` : '')}
+          ${!isPicking
             ? `<button class="btn-secondary btn-full" id="potd-btn">${potdName ? 'Change Player of the Day' : 'Player of the Day'}</button>`
             : ''}
           ${isLive && match.halfLengthSec > 0 && !isPicking
@@ -164,7 +165,7 @@ export function liveMatchView({ id }) {
           ${isHalfTime
             ? `<button class="btn-primary btn-full" id="second-half-btn">Start 2nd half</button>`
             : ''}
-          ${!isPicking
+          ${!isPicking && !isFinished
             ? `<button class="btn-danger btn-full" id="end-match-btn">End match</button>`
             : ''}
         </div>

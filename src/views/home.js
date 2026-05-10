@@ -98,7 +98,7 @@ export function homeView() {
     if (finished.length === 0) return `<p class="empty-state">No finished matches yet.</p>`;
     return `<ul class="item-list">${finished.map(m => `
       <li class="item-row">
-        ${matchSummary(m)}
+        <a href="#/live-match/${m.id}" class="item-row-label" style="text-decoration:none;color:inherit;display:block;">${matchSummary(m)}</a>
         <button class="btn-secondary btn-sm" data-archive="${m.id}" title="Archive">Archive</button>
       </li>`).join('')}</ul>`;
   }
@@ -111,7 +111,7 @@ export function homeView() {
         <ul class="item-list" style="margin-top:0.5rem;">
           ${archived.map(m => `
             <li class="item-row">
-              ${matchSummary(m)}
+              <a href="#/live-match/${m.id}" class="item-row-label" style="text-decoration:none;color:inherit;display:block;">${matchSummary(m)}</a>
               <button class="btn-secondary btn-sm" data-unarchive="${m.id}" title="Unarchive">Unarchive</button>
             </li>`).join('')}
         </ul>
@@ -125,12 +125,12 @@ export function homeView() {
     const { half1, half2 } = keepersPerHalf(ms, m.secondHalfStartSec);
     const keeperLine = formatKeepers(half1, half2, playerMap);
     const statusTag = m.status === 'LIVE' ? ' · LIVE' : m.status === 'HALF_TIME' ? ' · HT' : '';
-    return `<div class="item-row-label">
+    return `
       ${escHtml(teamName)} ${m.goalsUs}–${m.goalsThem} ${escHtml(m.opponent)}<small style="color:#777;">${statusTag}</small>
       ${date ? `<br><small style="color:#777;">${date}</small>` : ''}
       ${keeperLine ? `<br><small style="color:#777;">🧤 ${keeperLine}</small>` : ''}
       ${potd ? `<br><small>· POTD: ${escHtml(potd.name)}</small>` : ''}
-    </div>`;
+    `;
   }
 
   render();
