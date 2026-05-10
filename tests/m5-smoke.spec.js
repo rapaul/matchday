@@ -91,14 +91,9 @@ test('no console errors during full flow', async ({ page }) => {
 
   await page.goto('/#/new-match');
   await page.fill('#opponent', 'Test FC');
-  const checks = page.locator('.player-check');
-  await checks.nth(0).check();
-  await page.locator('.role-select').nth(0).selectOption('GOALIE');
-  for (let i = 1; i <= 6; i++) await checks.nth(i).check();
-  for (let i = 7; i <= 8; i++) {
-    await checks.nth(i).check();
-    await page.locator('.role-select').nth(i).selectOption('BENCH');
-  }
+  await page.locator('[data-role-gk]').nth(0).click();
+  await page.locator('[data-role-bench]').nth(7).click();
+  await page.locator('[data-role-bench]').nth(8).click();
   await page.click('#kickoff-btn');
   await page.click('#goal-us');
   page.once('dialog', d => d.accept('Alice'));

@@ -13,18 +13,10 @@ async function seedPlayers(page) {
 async function startMatch(page) {
   await page.goto('/#/new-match');
   await page.fill('#opponent', 'Red FC');
-  // Pick all 9 players: first as goalie, next 6 outfield, last 2 bench
-  const checks = page.locator('.player-check');
-  await checks.nth(0).check();
-  await page.locator('.role-select').nth(0).selectOption('GOALIE');
-  for (let i = 1; i <= 6; i++) {
-    await checks.nth(i).check();
-    // default role is FIELD — no need to change
-  }
-  for (let i = 7; i <= 8; i++) {
-    await checks.nth(i).check();
-    await page.locator('.role-select').nth(i).selectOption('BENCH');
-  }
+  // 9 players default to FIELD; flip p1→GK and p8/p9→BENCH for a 7-a-side lineup.
+  await page.locator('[data-role-gk]').nth(0).click();
+  await page.locator('[data-role-bench]').nth(7).click();
+  await page.locator('[data-role-bench]').nth(8).click();
   await page.click('#kickoff-btn');
   await expect(page).toHaveURL(/live-match/);
 }
@@ -48,7 +40,7 @@ test('new-match kickoff button disabled until valid lineup', async ({ page }) =>
 
 test('can start a match and see live match screen', async ({ page }) => {
   await startMatch(page);
-  await expect(page.locator('h1')).toContainText('vs Red FC');
+  await expect(page.locator('#opponent-input')).toHaveValue('Red FC');
   await expect(page.locator('#clock-display')).toBeVisible();
 });
 
