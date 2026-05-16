@@ -23,6 +23,8 @@
  * @property {number|null} clockStartWall  - epoch ms when the clock was last resumed; null when paused
  * @property {number|null} secondHalfStartSec  - clock seconds at which the second half kicked off; null until half-time happens
  * @property {boolean} [archived]  - true when the match is hidden from the main list and excluded from stats
+ * @property {string|null} [keeperHalf1Id]  - manual override of the half-1 keeper; when set, wins over the stint-derived keeper
+ * @property {string|null} [keeperHalf2Id]  - manual override of the half-2 keeper; when set, wins over the stint-derived keeper
  */
 
 /**

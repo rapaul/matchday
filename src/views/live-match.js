@@ -1,6 +1,7 @@
 import { getMatch, updateMatch, getStintsForMatch, openStint, closeStint, getPlayers } from '../repository.js';
 import { createClock, fmtTime } from '../match-clock.js';
 import { subSuggester } from '../sub-suggester.js';
+import { effectiveKeepersPerHalf } from '../stats.js';
 import { navigate } from '../router.js';
 
 export function liveMatchView({ id }) {
@@ -17,6 +18,7 @@ export function liveMatchView({ id }) {
 
   let pendingSubId = null;
   let pickingPotd = false;
+  let pickingKeeperHalf = null;
 
   const initialElapsed = match.clockElapsedSec ?? 0;
   const initialStartWall = match.clockStartWall ?? null;
@@ -66,6 +68,11 @@ export function liveMatchView({ id }) {
     const incomingName = isPicking ? (playerMap[pendingSubId]?.name ?? '?') : '';
     const potdName = match.potdPlayerId ? (playerMap[match.potdPlayerId]?.name ?? '?') : null;
 
+    const { half1: keeperH1Id, half2: keeperH2Id } = effectiveKeepersPerHalf(s, match);
+    const keeperH1Name = keeperH1Id ? (playerMap[keeperH1Id]?.name ?? '?') : null;
+    const keeperH2Name = keeperH2Id ? (playerMap[keeperH2Id]?.name ?? '?') : null;
+    const hasSecondHalf = match.secondHalfStartSec != null;
+
     const nowSec = clockSec ?? clock.getSec();
     let topPlayedIds = null;
     if (isPicking) {
@@ -100,6 +107,18 @@ export function liveMatchView({ id }) {
           <div style="display:flex;flex-direction:column;gap:0.5rem;">
             <button class="btn-secondary btn-full" id="cancel-potd-btn">Cancel</button>
           </div>
+        ` : pickingKeeperHalf !== null ? `
+          <p style="font-weight:600;margin-bottom:0.5rem;">Pick Half ${pickingKeeperHalf} Keeper:</p>
+          <ul class="item-list" style="margin-bottom:1rem;">
+            ${players.map(p => `
+              <li class="item-row">
+                <button class="btn-secondary btn-full" data-pick-keeper="${p.id}">${escHtml(p.name)}</button>
+              </li>
+            `).join('') || '<li class="item-row"><span class="item-row-label">—</span></li>'}
+          </ul>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <button class="btn-secondary btn-full" id="cancel-keeper-btn">Cancel</button>
+          </div>
         ` : `
         <!-- Score row -->
         <div style="display:flex;align-items:center;justify-content:center;gap:1rem;padding:0.75rem;background:#f0ebfb;border-radius:0.5rem;margin-bottom:0.5rem;">
@@ -109,6 +128,7 @@ export function liveMatchView({ id }) {
           <span style="font-size:0.875rem;color:#555;margin-left:0.5rem;" id="clock-display">${fmtTime(clockSec ?? clock.getSec())}</span>
         </div>
         ${potdName ? `<p style="font-size:0.875rem;color:#555;text-align:center;margin-bottom:1rem;">POTD: ${escHtml(potdName)}</p>` : '<div style="margin-bottom:1rem;"></div>'}
+        ${isFinished ? `<p style="font-size:0.875rem;color:#555;text-align:center;margin-bottom:1rem;">🧤 ${keeperH1Name ? escHtml(keeperH1Name) : '—'}${hasSecondHalf ? ` / ${keeperH2Name ? escHtml(keeperH2Name) : '—'}` : ''}</p>` : ''}
 
         <!-- On field -->
         <p style="font-weight:600;margin-bottom:0.5rem;">
@@ -159,6 +179,12 @@ export function liveMatchView({ id }) {
           ${!isPicking
             ? `<button class="btn-secondary btn-full" id="potd-btn">${potdName ? 'Change Player of the Day' : 'Player of the Day'}</button>`
             : ''}
+          ${!isPicking && isFinished
+            ? `<button class="btn-secondary btn-full" data-edit-keeper="1">Change Half 1 Keeper</button>`
+            : ''}
+          ${!isPicking && isFinished && hasSecondHalf
+            ? `<button class="btn-secondary btn-full" data-edit-keeper="2">Change Half 2 Keeper</button>`
+            : ''}
           ${isLive && match.halfLengthSec > 0 && !isPicking
             ? `<button class="btn-secondary btn-full" id="half-time-btn">Half time</button>`
             : ''}
@@ -188,6 +214,22 @@ export function liveMatchView({ id }) {
       });
       el.querySelector('#cancel-potd-btn')?.addEventListener('click', () => {
         pickingPotd = false;
+        render(clock.getSec());
+      });
+      return;
+    }
+
+    if (pickingKeeperHalf !== null) {
+      const field = pickingKeeperHalf === 1 ? 'keeperHalf1Id' : 'keeperHalf2Id';
+      el.querySelectorAll('[data-pick-keeper]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          match = updateMatch(id, { [field]: btn.dataset.pickKeeper });
+          pickingKeeperHalf = null;
+          render(clock.getSec());
+        });
+      });
+      el.querySelector('#cancel-keeper-btn')?.addEventListener('click', () => {
+        pickingKeeperHalf = null;
         render(clock.getSec());
       });
       return;
@@ -265,6 +307,13 @@ export function liveMatchView({ id }) {
     el.querySelector('#potd-btn')?.addEventListener('click', () => {
       pickingPotd = true;
       render(clock.getSec());
+    });
+
+    el.querySelectorAll('[data-edit-keeper]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pickingKeeperHalf = Number(btn.dataset.editKeeper);
+        render(clock.getSec());
+      });
     });
   }
 

@@ -49,6 +49,8 @@ export function createMatch({ opponent, halfLengthSec }) {
     clockStartWall: null,
     secondHalfStartSec: null,
     archived: false,
+    keeperHalf1Id: null,
+    keeperHalf2Id: null,
   };
   matches.push(match);
   saveMatches(matches);

@@ -1,5 +1,5 @@
 import { getMatches, getPlayers, getStints, getTeamName, updateMatch } from '../repository.js';
-import { keepersPerHalf } from '../stats.js';
+import { effectiveKeepersPerHalf } from '../stats.js';
 import { buildMarkdown, downloadMarkdown } from '../export.js';
 import { navigate } from '../router.js';
 
@@ -122,7 +122,7 @@ export function homeView() {
     const potd = m.potdPlayerId ? playerMap[m.potdPlayerId] : null;
     const date = m.createdAt ? fmtDate(m.createdAt) : '';
     const ms = stintsByMatch.get(m.id) ?? [];
-    const { half1, half2 } = keepersPerHalf(ms, m.secondHalfStartSec);
+    const { half1, half2 } = effectiveKeepersPerHalf(ms, m);
     const keeperLine = formatKeepers(half1, half2, playerMap);
     const statusTag = m.status === 'LIVE' ? ' · LIVE' : m.status === 'HALF_TIME' ? ' · HT' : '';
     return `

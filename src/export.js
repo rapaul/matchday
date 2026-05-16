@@ -1,4 +1,4 @@
-import { keepersPerHalf } from './stats.js';
+import { effectiveKeepersPerHalf } from './stats.js';
 
 const DATE_OPTS = { day: 'numeric', month: 'short', year: 'numeric' };
 
@@ -46,7 +46,7 @@ function renderMatch(m, team, playerMap, stintsByMatch) {
 
   const potdName = m.potdPlayerId ? playerMap[m.potdPlayerId]?.name : null;
   const ms = stintsByMatch.get(m.id) ?? [];
-  const { half1, half2 } = keepersPerHalf(ms, m.secondHalfStartSec);
+  const { half1, half2 } = effectiveKeepersPerHalf(ms, m);
   const h1 = half1 ? playerMap[half1]?.name : null;
   const h2 = half2 ? playerMap[half2]?.name : null;
 

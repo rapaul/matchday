@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { keepersPerHalf, computePlayerStats } from './stats.js';
+import { keepersPerHalf, effectiveKeepersPerHalf, computePlayerStats } from './stats.js';
 
 const HALF_START = 600; // second half started at clock=600
 
@@ -46,6 +46,45 @@ test('keepersPerHalf — no second half yet returns null half2', () => {
   const { half1, half2 } = keepersPerHalf(stints, null);
   assert.equal(half1, 'p1');
   assert.equal(half2, null);
+});
+
+test('effectiveKeepersPerHalf — falls back to stint-derived when no override', () => {
+  const stints = [{ id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 }];
+  const match = { secondHalfStartSec: HALF_START };
+  const { half1, half2 } = effectiveKeepersPerHalf(stints, match);
+  assert.equal(half1, 'p1');
+  assert.equal(half2, 'p1');
+});
+
+test('effectiveKeepersPerHalf — override wins over stint-derived', () => {
+  const stints = [{ id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 }];
+  const match = { secondHalfStartSec: HALF_START, keeperHalf1Id: 'p9', keeperHalf2Id: 'p8' };
+  const { half1, half2 } = effectiveKeepersPerHalf(stints, match);
+  assert.equal(half1, 'p9');
+  assert.equal(half2, 'p8');
+});
+
+test('effectiveKeepersPerHalf — per-half override independent', () => {
+  const stints = [{ id: 's1', matchId: 'm', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 }];
+  const match = { secondHalfStartSec: HALF_START, keeperHalf2Id: 'p8' };
+  const { half1, half2 } = effectiveKeepersPerHalf(stints, match);
+  assert.equal(half1, 'p1');
+  assert.equal(half2, 'p8');
+});
+
+test('computePlayerStats — keeper override is credited over stint goalie', () => {
+  const players = [{ id: 'p1', name: 'Alice' }, { id: 'p2', name: 'Bob' }];
+  const matches = [
+    { id: 'm1', status: 'FINISHED', secondHalfStartSec: 600, potdPlayerId: null, keeperHalf1Id: 'p2' },
+  ];
+  const stints = [
+    { id: 's1', matchId: 'm1', playerId: 'p1', role: 'GOALIE', startSec: 0, endSec: 1200 },
+  ];
+  const stats = computePlayerStats(players, matches, stints);
+  const alice = stats.find(s => s.id === 'p1');
+  const bob = stats.find(s => s.id === 'p2');
+  assert.equal(alice.keeperHalves, 1); // H2 still derived (Alice was in goal at clock=600)
+  assert.equal(bob.keeperHalves, 1);   // H1 override → Bob
 });
 
 test('computePlayerStats — archived matches excluded', () => {
