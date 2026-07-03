@@ -1,6 +1,7 @@
 import { getMatches, getPlayers, getStints, getTeamName, updateMatch } from '../repository.js';
 import { effectiveKeepersPerHalf } from '../stats.js';
 import { buildMarkdown, downloadMarkdown } from '../export.js';
+import { collectBackup, parseBackup, applyBackup, downloadJson } from '../backup.js';
 import { navigate } from '../router.js';
 
 export function homeView() {
@@ -37,6 +38,13 @@ export function homeView() {
         <div class="mt-2">
           <button class="btn-secondary btn-full" id="export-btn">Export markdown</button>
         </div>
+        <div class="mt-2">
+          <button class="btn-secondary btn-full" id="export-json-btn">Export data (JSON)</button>
+        </div>
+        <div class="mt-2">
+          <button class="btn-secondary btn-full" id="import-json-btn">Import data (JSON)</button>
+          <input type="file" id="import-json-input" accept="application/json,.json" style="display:none;">
+        </div>
         ${renderArchived(archived)}
       </div>`;
 
@@ -57,6 +65,34 @@ export function homeView() {
       });
       const stamp = new Date().toISOString().slice(0, 10);
       downloadMarkdown(md, `matchday-${stamp}.md`);
+    });
+
+    el.querySelector('#export-json-btn').addEventListener('click', () => {
+      const stamp = new Date().toISOString().slice(0, 10);
+      downloadJson(collectBackup(), `matchday-backup-${stamp}.json`);
+    });
+
+    const importInput = el.querySelector('#import-json-input');
+    el.querySelector('#import-json-btn').addEventListener('click', () => importInput.click());
+    importInput.addEventListener('change', async () => {
+      const file = importInput.files[0];
+      if (!file) return;
+      let parsed;
+      try {
+        parsed = parseBackup(await file.text());
+      } catch (err) {
+        alert(`Import failed: ${err.message}`);
+        importInput.value = '';
+        return;
+      }
+      const ok = confirm(
+        `Importing will DELETE and REPLACE all data currently on this device with the ` +
+        `contents of this file (${parsed.players.length} players, ${parsed.matches.length} matches).\n\n` +
+        `This cannot be undone. Continue?`
+      );
+      if (!ok) { importInput.value = ''; return; }
+      applyBackup(parsed);
+      location.reload();
     });
 
     el.querySelectorAll('[data-archive]').forEach(btn => {

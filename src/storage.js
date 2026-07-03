@@ -41,3 +41,11 @@ export function saveTeamName(name) {
   checkSchema();
   localStorage.setItem('teamName', name);
 }
+
+export function loadSchemaVersion() {
+  const v = localStorage.getItem('schemaVersion');
+  return v === null ? SCHEMA_VERSION : Number(v);
+}
+export function saveSchemaVersion(v) {
+  localStorage.setItem('schemaVersion', String(v));
+}
